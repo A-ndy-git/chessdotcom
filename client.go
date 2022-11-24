@@ -1,4 +1,3 @@
-// Client implements the API client, request handling, errors etc.
 package chessdotcom
 
 import (
@@ -35,25 +34,25 @@ func New() *Client {
 	}
 }
 
-// Sends a unauthenticated GET request to a specified path. As GET is the only method used, there is only one handler.
+// Sends a GET request to a specified path. As GET is the only method used, there is only one method handler.
 func (c *Client) get(path string, resp interface{}) error {
 	endpoint := fmt.Sprintf("%s%s", c.baseUrl, path)
 
 	req, err := c.client.Get(endpoint)
 	if err != nil {
-		return err
+		return ErrApiUnavailable
 	}
 
 	defer req.Body.Close()
 
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
-		return err
+		return ErrGeneric
 	}
 
 	err = json.Unmarshal(body, resp)
 	if err != nil {
-		return err
+		return ErrGeneric
 	}
 
 	return nil
