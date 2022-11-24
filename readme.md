@@ -1,5 +1,7 @@
 # ChessDotCom
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/A-ndy-git/chessdotcom.svg)](https://pkg.go.dev/github.com/A-ndy-git/chessdotcom)
+
 ChessDotCom is a minimal wrapper for the official Chess.com [REST API](https://www.chess.com/news/view/published-data-api). Key features:
 
 - All responses are fully typed.
