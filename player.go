@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type PlayerProfileResponse struct {
+type PlayerProfile struct {
 	Avatar     string        `json:"avatar"`
 	PlayerId   int64         `json:"player_id"`
 	ID         string        `json:"id"`
@@ -22,8 +22,9 @@ type PlayerProfileResponse struct {
 	Verified   bool          `json:"verified"`
 }
 
-func (c *Client) PlayerProfile(username string) (PlayerProfileResponse, error) {
-	var res PlayerProfileResponse
+// Returns details of an existing player.
+func (c *Client) PlayerProfile(username string) (PlayerProfile, error) {
+	var res PlayerProfile
 
 	endpoint := fmt.Sprintf("/player/%v", username)
 
@@ -35,19 +36,19 @@ func (c *Client) PlayerProfile(username string) (PlayerProfileResponse, error) {
 	return res, nil
 }
 
-type LastResponse struct {
+type Last struct {
 	Rating int64         `json:"rating"`
 	Date   time.Duration `json:"date"`
 	Rd     int64         `json:"rd"`
 }
 
-type BestResponse struct {
+type Best struct {
 	Rating int64         `json:"rating"`
 	Date   time.Duration `json:"date"`
 	Game   string        `json:"game"`
 }
 
-type RecordResponse struct {
+type Record struct {
 	Win            int64         `json:"win"`
 	Loss           int64         `json:"loss"`
 	Draw           int64         `json:"draw"`
@@ -55,24 +56,24 @@ type RecordResponse struct {
 	TimeoutPercent int           `json:"timeout_percent"`
 }
 
-type TournamentResponse struct {
+type Tournament struct {
 	Points        int64 `json:"points"`
 	Withdraw      int64 `json:"withdraw"`
 	Count         int64 `json:"count"`
 	HighestFinish int64 `json:"highest_finish"`
 }
 
-type ChessDailyResponse struct {
-	Last       LastResponse       `json:"last"`
-	Best       BestResponse       `json:"best"`
-	Record     RecordResponse     `json:"record"`
-	Tournament TournamentResponse `json:"tournament"`
+type ChessDaily struct {
+	Last       Last       `json:"last"`
+	Best       Best       `json:"best"`
+	Record     Record     `json:"record"`
+	Tournament Tournament `json:"tournament"`
 }
 
-type ChessRapidResponse struct {
-	Last   LastResponse   `json:"last"`
-	Best   BestResponse   `json:"best"`
-	Record RecordResponse `json:"record"`
+type ChessRapid struct {
+	Last   Last   `json:"last"`
+	Best   Best   `json:"best"`
+	Record Record `json:"record"`
 }
 
 type ChessRating struct {
@@ -80,33 +81,30 @@ type ChessRating struct {
 	Date   time.Duration `json:"date"`
 }
 
-type TacticsResponse struct {
+type Tactics struct {
 	Highest ChessRating `json:"highest"`
 	Lowest  ChessRating `json:"lowest"`
 }
 
-type PuzzleRushBestResponse struct {
+type PuzzleRushBest struct {
 	TotalAttempts int64 `json:"total_attempts"`
 	Score         int64 `json:"score"`
 }
 
-type PuzzleRushResponse struct {
-	Best PuzzleRushBestResponse `json:"best"`
+type PlayerStats struct {
+	ChessDaily    ChessDaily     `json:"chess_daily"`
+	Chess960Daily ChessDaily     `json:"chess960_daily"`
+	ChessRapid    ChessRapid     `json:"chess_rapid"`
+	ChessBullet   ChessRapid     `json:"chess_bullet"`
+	ChessBlitz    ChessRapid     `json:"chess_blitz"`
+	Fide          int64          `json:"fide"`
+	Tactics       Tactics        `json:"tactics"`
+	PuzzleRush    PuzzleRushBest `json:"puzzle_rush"`
 }
 
-type PlayerStatsResponse struct {
-	ChessDaily    ChessDailyResponse     `json:"chess_daily"`
-	Chess960Daily ChessDailyResponse     `json:"chess960_daily"`
-	ChessRapid    ChessRapidResponse     `json:"chess_rapid"`
-	ChessBullet   ChessRapidResponse     `json:"chess_bullet"`
-	ChessBlitz    ChessRapidResponse     `json:"chess_blitz"`
-	Fide          int64                  `json:"fide"`
-	Tactics       TacticsResponse        `json:"tactics"`
-	PuzzleRush    PuzzleRushBestResponse `json:"puzzle_rush"`
-}
-
-func (c *Client) PlayerStats(username string) (PlayerStatsResponse, error) {
-	var res PlayerStatsResponse
+// Returns ratings, win/loss, and other stats about a players game play, tactics, lessons and puzzle rush score.
+func (c *Client) PlayerStats(username string) (PlayerStats, error) {
+	var res PlayerStats
 
 	endpoint := fmt.Sprintf("/player/%v/stats", username)
 
@@ -134,38 +132,32 @@ type PlayerGames struct {
 	Black        string        `json:"black"`
 }
 
-type PlayerGamesResponse struct {
-	Games []PlayerGames `json:"games"`
-}
-
-func (c *Client) PlayerGames(username string) (PlayerGamesResponse, error) {
-	var res PlayerGamesResponse
+// Returns an array of daily chess games that a player is currently playing.
+func (c *Client) PlayerGames(username string) ([]PlayerGames, error) {
+	var res map[string][]PlayerGames
 
 	endpoint := fmt.Sprintf("/player/%v/games", username)
 
 	err := c.get(endpoint, &res)
 	if err != nil {
-		return res, err
+		return nil, err
 	}
 
-	return res, nil
+	return res["games"], nil
 }
 
-type PlayerGameArchivesResponse struct {
-	Archives []string `json:"archives"`
-}
-
-func (c *Client) PlayerGameArchives(username string) (PlayerGameArchivesResponse, error) {
-	var res PlayerGameArchivesResponse
+// Returns an array of monthly game archives available for a player.
+func (c *Client) PlayerGameArchives(username string) ([]string, error) {
+	var res map[string][]string
 
 	endpoint := fmt.Sprintf("/player/%v/games/archives", username)
 
 	err := c.get(endpoint, &res)
 	if err != nil {
-		return res, err
+		return nil, err
 	}
 
-	return res, nil
+	return res["archives"], nil
 }
 
 type PlayerGamesToMove struct {
@@ -174,23 +166,21 @@ type PlayerGamesToMove struct {
 	LastActivity time.Duration `json:"last_activity"`
 }
 
-type PlayerGamesToMoveResponse struct {
-	Games []PlayerGamesToMove `json:"games"`
-}
-
-func (c *Client) PlayerGamesToMove(username string) (PlayerGamesToMoveResponse, error) {
-	var res PlayerGamesToMoveResponse
+// Returns an array of daily chess games where it is a players turn to act.
+func (c *Client) PlayerGamesToMove(username string) ([]PlayerGamesToMove, error) {
+	var res map[string][]PlayerGamesToMove
 
 	endpoint := fmt.Sprintf("/player/%v/games/to-move", username)
 
 	err := c.get(endpoint, &res)
 	if err != nil {
-		return res, err
+		return nil, err
 	}
 
-	return res, nil
+	return res["games"], nil
 }
 
+// Returns standard multi-game format PGN containing all games for a month for a player.
 func (c *Client) PlayerGameArchivePGN(username, year, month string) (string, error) {
 	var res string
 
@@ -229,21 +219,18 @@ type PlayerGame struct {
 	Black        Player        `json:"black"`
 }
 
-type PlayerGameMonthlyArchiveResponse struct {
-	Games []PlayerGame `json:"games"`
-}
-
-func (c *Client) PlayerGameMonthlyArchive(username, year, month string) (PlayerGameMonthlyArchiveResponse, error) {
-	var res PlayerGameMonthlyArchiveResponse
+// Returns an array of live and daily chess games that a player has finished.
+func (c *Client) PlayerGameMonthlyArchive(username, year, month string) ([]PlayerGame, error) {
+	var res map[string][]PlayerGame
 
 	endpoint := fmt.Sprintf("/player/%v/games/%v/%v", username, year, month)
 
 	err := c.get(endpoint, &res)
 	if err != nil {
-		return res, err
+		return nil, err
 	}
 
-	return res, nil
+	return res["games"], nil
 }
 
 type PlayerClub struct {
@@ -255,21 +242,18 @@ type PlayerClub struct {
 	Joined       time.Duration `json:"joined"`
 }
 
-type PlayerClubsResponse struct {
-	Clubs []PlayerClub `json:"clubs"`
-}
-
-func (c *Client) PlayerClubs(username string) (PlayerClubsResponse, error) {
-	var res PlayerClubsResponse
+// Returns an array of clubs a player is a member of, with joined date and last activity date.
+func (c *Client) PlayerClubs(username string) ([]PlayerClub, error) {
+	var res map[string][]PlayerClub
 
 	endpoint := fmt.Sprintf("/player/%v/clubs", username)
 
 	err := c.get(endpoint, &res)
 	if err != nil {
-		return res, err
+		return nil, err
 	}
 
-	return res, nil
+	return res["clubs"], nil
 }
 
 type PlayerTournament struct {
@@ -290,6 +274,7 @@ type PlayerTournamentsResponse struct {
 	Registered []PlayerTournament `json:"registered"`
 }
 
+// Returns an array of tournaments a player is registered, is attending or has attended in the past.
 func (c *Client) PlayerTournaments(username string) (PlayerTournamentsResponse, error) {
 	var res PlayerTournamentsResponse
 
@@ -303,17 +288,14 @@ func (c *Client) PlayerTournaments(username string) (PlayerTournamentsResponse, 
 	return res, nil
 }
 
-type TitledPlayersResponse struct {
-	Players []string `json:"players"`
-}
-
-func (c *Client) TitledPlayers() (TitledPlayersResponse, error) {
-	var res TitledPlayersResponse
+// Returns an array of titled-player usernames.
+func (c *Client) TitledPlayers() ([]string, error) {
+	var res map[string][]string
 
 	err := c.get("/titled/GM", &res)
 	if err != nil {
-		return res, err
+		return nil, err
 	}
 
-	return res, nil
+	return res["players"], nil
 }

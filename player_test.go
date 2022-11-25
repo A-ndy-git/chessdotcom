@@ -1,6 +1,7 @@
 package chessdotcom
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -14,13 +15,13 @@ func TestPlayerProfile(t *testing.T) {
 
 	t.Run("Should return player profile", func(t *testing.T) {
 
-		res, err := client.PlayerProfile(player)
+		profile, err := client.PlayerProfile(player)
 		if err != nil {
 			t.Fatalf("Failed to fetch player profile: %v", err)
 		}
 
 		// PlayerId will always be static and unique
-		if res.PlayerId != 41 {
+		if profile.PlayerId != 41 {
 			t.Fatal("Incorrect PlayerId returned from PlayerProfile")
 		}
 	})
@@ -32,16 +33,16 @@ func TestPlayerStats(t *testing.T) {
 
 	t.Run("Should return player stats", func(t *testing.T) {
 
-		res, err := client.PlayerStats(player)
+		stats, err := client.PlayerStats(player)
 		if err != nil {
 			t.Fatalf("Failed to fetch player stats: %v", err)
 		}
 
-		if res.Fide < 1707 {
+		if stats.Fide < 1707 {
 			t.Fatal("Incorrect FIDE returned from PlayerStats")
 		}
 
-		if res.ChessDaily.Best.Rating < 2065 {
+		if stats.ChessDaily.Best.Rating < 2065 {
 			t.Fatal("Incorrect best daily rating from PlayerStats")
 		}
 	})
@@ -67,12 +68,12 @@ func TestPlayerArchives(t *testing.T) {
 
 	t.Run("Should return player game archives", func(t *testing.T) {
 
-		res, err := client.PlayerGameArchives(player)
+		gameArchives, err := client.PlayerGameArchives(player)
 		if err != nil {
 			t.Fatalf("Failed to fetch player game archives: %v", err)
 		}
 
-		if len(res.Archives) == 0 {
+		if len(gameArchives) == 0 {
 			t.Fatal("No archives returned from PlayerGameArchives")
 		}
 	})
@@ -110,11 +111,12 @@ func TestPlayerClubs(t *testing.T) {
 
 	t.Run("Should return player clubs", func(t *testing.T) {
 
-		_, err := client.PlayerClubs(player)
+		clubs, err := client.PlayerClubs(player)
 		if err != nil {
 			t.Fatalf("Failed to fetch player clubs: %v", err)
 		}
 
+		fmt.Println("Club name", clubs[0].Name)
 	})
 }
 
@@ -124,10 +126,12 @@ func TestPlayerTournaments(t *testing.T) {
 
 	t.Run("Should return player tournaments", func(t *testing.T) {
 
-		_, err := client.PlayerTournaments(player)
+		tournaments, err := client.PlayerTournaments(player)
 		if err != nil {
 			t.Fatalf("Failed to fetch player tournaments: %v", err)
 		}
+
+		fmt.Println("Finished status", tournaments.Finished[0].Status)
 
 	})
 }
@@ -138,9 +142,13 @@ func TestTitledPlayers(t *testing.T) {
 
 	t.Run("Should return titled players", func(t *testing.T) {
 
-		_, err := client.TitledPlayers()
+		titledPlayers, err := client.TitledPlayers()
 		if err != nil {
 			t.Fatalf("Failed to fetch titled players: %v", err)
 		}
+
+		fmt.Println("Titled 0", titledPlayers[0])
+		fmt.Println("Titled 1", titledPlayers[1])
+		fmt.Println("Titled 2", titledPlayers[2])
 	})
 }
